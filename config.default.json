@@ -1,5 +1,6 @@
 {
-  "BRAINWEBDIR": "path/to/Brainweb",
+  "IXI": "path/to/IXI",
+  "BRAINWEBDIR": "datasets/IXI Dataset",
   "MSKRIDIR": "path/to/MSKRI",
   "MSSEG2008DIR": "path/to/MSSEG2008",
   "MSISBI2015DIR": "path/to/ISBIMSlesionChallenge",

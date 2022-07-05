@@ -18,23 +18,24 @@ from utils.MINC import *
 from utils.image_utils import crop, crop_center
 from utils.tfrecord_utils import *
 
+import re
 
 class BRAINWEB(object):
     FILTER_TYPES = ['NORMAL', 'MILDMS', 'MODERATEMS', 'SEVEREMS']
     SET_TYPES = ['TRAIN', 'VAL', 'TEST']
-    LABELS = {'BACKGROUND': 0, 'CSF': 1, 'GM': 2, 'WM': 3, 'FAT': 4, 'MUSCLE': 5, 'SKIN': 6, 'SKULL': 7, 'GLIALMATTER': 8, 'CONNECTIVE': 9, 'LESION': 10}
-    VIEW_MAPPING = {'saggital': 0, 'coronal': 1, 'axial': 2}
+    LABELS = {'BACKGROUND': 0, 'LESION': [1, 2, 3, 4]}
+    VIEW_MAPPING = {'saggital': 2, 'coronal': 0, 'axial': 1}
     PROTOCOL_MAPPINGS = {'FLAIR': 'flair*', 'T2': 't2*'}
 
     class Options(object):
         def __init__(self):
             self.description = None
             self.dir = os.path.dirname(os.path.realpath(__file__))
-            self.folderNormal = 'normal'
+            self.folderNormal = ''
             self.folderMildMS = os.path.join('lesions', 'mild')
             self.folderModerateMS = os.path.join('lesions', 'moderate')
-            self.folderSevereMS = os.path.join('lesions', 'severe')
-            self.folderGT = 'groundtruth'
+            self.folderSevereMS = os.path.join('ADNI', 'MRI')
+            self.folderGT = os.path.join('ADNI', 'GROUND_TRUTH')
             self.numSamples = -1
             self.partition = {'TRAIN': 0.6, 'VAL': 0.15, 'TEST': 0.25}
             self.sliceStart = 20
@@ -220,16 +221,16 @@ class BRAINWEB(object):
             elif minc_folder == options.folderModerateMS:
                 _type = 'MODERATEMS'
             elif minc_folder == options.folderSevereMS:
-                _type = 'SEVEREMS'
+                _type = 'ADNI'
 
             # Continue with the next patient if the current one is not part of the desired types
             if _type not in options.filterType:
                 continue
 
             if options.filterProtocol:
-                _regex = BRAINWEB.PROTOCOL_MAPPINGS[options.filterProtocol] + ".mnc.gz"
+                _regex = BRAINWEB.PROTOCOL_MAPPINGS[options.filterProtocol] + ".nii*"
             else:
-                _regex = "*.mnc.gz"
+                _regex = "*.nii*"
             _files = glob.glob(os.path.join(options.dir, minc_folder, _regex))
             for f, fname in enumerate(_files):
                 patient = {
@@ -245,8 +246,8 @@ class BRAINWEB(object):
                     patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, 'mild_lesions.mnc.gz')
                 elif patient['type'] == 'MODERATEMS':
                     patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, 'moderate_lesions.mnc.gz')
-                elif patient['type'] == 'SEVEREMS':
-                    patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, 'severe_lesions.mnc.gz')
+                elif patient['type'] == 'ADNI':
+                    patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, patient['name'].replace('t1', 'seg'))
 
                 patients.append(patient)
 
@@ -262,31 +263,36 @@ class BRAINWEB(object):
 
         # Try to load the segmentation ground-truth
         minc_seg_path = patient["groundtruth_filename"]
-        minc_seg = MINC(minc_seg_path)
-        skullmap = MINC(minc_seg_path)
-        skullmap.data = (skullmap.data * 0.0) + 1.0
-        skullmap.set_view_mapping(BRAINWEB.VIEW_MAPPING)
-        minc_seg.set_view_mapping(BRAINWEB.VIEW_MAPPING)
+        if patient['type'] == 'ADNI':
+            minc_seg = MINC(minc_seg_path)
+            # skullmap = MINC(minc_seg_path)
+            # skullmap.data = (skullmap.data * 0.0) + 1.0
+            # skullmap.set_view_mapping(BRAINWEB.VIEW_MAPPING)
+            # minc_seg.set_view_mapping(BRAINWEB.VIEW_MAPPING)
 
-        # If desired, compute the skullmap
-        if self.options.skullRemoval:
-            skullmap.data[minc_seg.data == BRAINWEB.LABELS['FAT']] = 0
-            skullmap.data[minc_seg.data == BRAINWEB.LABELS['MUSCLE']] = 0
-            skullmap.data[minc_seg.data == BRAINWEB.LABELS['SKIN']] = 0
-            skullmap.data[minc_seg.data == BRAINWEB.LABELS['SKULL']] = 0
-            skullmap.data[minc_seg.data == BRAINWEB.LABELS['CONNECTIVE']] = 0
+            # If desired, compute the skullmap
+            # if self.options.skullRemoval:
+            #     skullmap.data[minc_seg.data == BRAINWEB.LABELS['FAT']] = 0
+            #     skullmap.data[minc_seg.data == BRAINWEB.LABELS['MUSCLE']] = 0
+            #     skullmap.data[minc_seg.data == BRAINWEB.LABELS['SKIN']] = 0
+            #     skullmap.data[minc_seg.data == BRAINWEB.LABELS['SKULL']] = 0
+            #     skullmap.data[minc_seg.data == BRAINWEB.LABELS['CONNECTIVE']] = 0
 
-        if self.options.backgroundRemoval:
-            skullmap.data[minc_seg.data == BRAINWEB.LABELS['BACKGROUND']] = 0
+            # if self.options.backgroundRemoval:
+            #     skullmap.data[minc_seg.data == BRAINWEB.LABELS['BACKGROUND']] = 0
 
-        # Binarize minc_seg
-        lesion_idx = (minc_seg.data == BRAINWEB.LABELS['LESION'])
-        nonlesion_idx = (minc_seg.data != BRAINWEB.LABELS['LESION'])
-        minc_seg.data[lesion_idx] = 1
-        minc_seg.data[nonlesion_idx] = 0
+            # Binarize minc_seg
+            # lesion_idx = (minc_seg.data == BRAINWEB.LABELS['LESION'])
+            lesion_idx = (minc_seg.data != 0)
+            nonlesion_idx = (minc_seg.data == 0)
+            minc_seg.data[lesion_idx] = 1
+            minc_seg.data[nonlesion_idx] = 0
 
-        if self.options.skullRemoval or self.options.backgroundRemoval:
-            minc.apply_skullmap(skullmap)
+            minc.normalize(method=self.options.normalizationMethod, lowerpercentile=0.0, upperpercentile=99.8)
+
+            return minc, minc_seg, minc_seg
+            # if self.options.skullRemoval or self.options.backgroundRemoval:
+            #     minc.apply_skullmap(skullmap)
 
         # In-place normalize the loaded volume
         minc.normalize(method=self.options.normalizationMethod, lowerpercentile=0.0, upperpercentile=99.8)
@@ -295,7 +301,8 @@ class BRAINWEB(object):
         # IEEE transactions on medical imaging, 19(2):143–150, 2000.
         # assert numpy.max(minc.getData()) <= 1.0, "MINC range is outside [0; 1]!"
 
-        return minc, minc_seg, skullmap
+        # return minc, minc_seg, skullmap
+        return minc, minc, minc
 
     # Returns the indices of patients which belong to either TRAIN, VAL or TEST. Your choice
     def get_patient_idx(self, split='TRAIN'):
@@ -397,9 +404,9 @@ class BRAINWEB(object):
         for i in range(images_tmp.shape[0]):
             img = numpy.squeeze(images_tmp[i])
             lbl = numpy.squeeze(labels_tmp[i])
-            ax1.imshow(img)
+            ax1.imshow(img, cmap='gray')
             ax1.set_title('Patch')
-            ax2.imshow(lbl)
+            ax2.imshow(lbl, cmap='gray')
             ax2.set_title('Groundtruth')
             matplotlib.pyplot.pause(pause)
 

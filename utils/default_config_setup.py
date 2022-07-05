@@ -209,7 +209,7 @@ def get_Brainweb_lesion_dataset(options):
     dataset_options = get_Brainweb_dataset_options(options)
     # Center Crops of slices from patients with lesions. Only for testing
     dataset_options.partition = {'TRAIN': 0.0, 'VAL': 0.0, 'TEST': 1.0}
-    dataset_options.filterType = 'SEVEREMS'
+    dataset_options.filterType = 'ADNI'
     dataset_options.rotations = [0]
     return BRAINWEB(dataset_options)
 
@@ -232,7 +232,7 @@ def get_Brainweb_dataset_options(options):
     dataset_options.addInstanceNoise = False
     dataset_options.axis = 'axial'
     dataset_options.filterType = 'NORMAL'
-    dataset_options.filterProtocol = 'T2'
+    dataset_options.filterProtocol = None
     dataset_options.normalizationMethod = 'scaling'
     dataset_options.skullRemoval = True
     dataset_options.sliceStart = options['sliceStart']

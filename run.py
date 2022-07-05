@@ -64,15 +64,15 @@ def main(args):
         else:
             # evaluate all datasets for best dice without hyper intensity prior
             options['applyHyperIntensityPrior'] = False
-            evaluate_optimal(model, options, Dataset.Brainweb)
-            evaluate_optimal(model, options, Dataset.MSLUB)
-            evaluate_optimal(model, options, Dataset.MSISBI2015)
+            evaluate_optimal(model, options, Dataset.BRAINWEB)
+            # evaluate_optimal(model, options, Dataset.MSLUB)
+            # evaluate_optimal(model, options, Dataset.MSISBI2015)
 
             # evaluate all datasets for best dice without hyper intensity prior
             options['applyHyperIntensityPrior'] = True
-            evaluate_optimal(model, options, Dataset.Brainweb)
-            evaluate_optimal(model, options, Dataset.MSLUB)
-            evaluate_optimal(model, options, Dataset.MSISBI2015)
+            evaluate_optimal(model, options, Dataset.BRAINWEB)
+            # evaluate_optimal(model, options, Dataset.MSLUB)
+            # evaluate_optimal(model, options, Dataset.MSISBI2015)
 
     ###############################################
     #  Evaluate generalization to other datasets  #
@@ -81,15 +81,15 @@ def main(args):
         evaluate_with_threshold(model, options, args.threshold, args.ds)
     else:
         options['applyHyperIntensityPrior'] = False
-        datasetBrainweb = get_evaluation_dataset(options, Dataset.Brainweb)
+        datasetBrainweb = get_evaluation_dataset(options, Dataset.BRAINWEB)
         _bestDiceVAL, _threshVAL = determine_threshold_on_labeled_patients([datasetBrainweb], model, options, description='VAL')
 
         print(f"Optimal threshold on MS Lesion Validation Set without optimal postprocessing: {_threshVAL} (Dice-Score {_bestDiceVAL})")
 
         # Re-evaluate with the previously determined threshold
-        evaluate_with_threshold(model, options, _threshVAL, Dataset.Brainweb)
-        evaluate_with_threshold(model, options, _threshVAL, Dataset.MSLUB)
-        evaluate_with_threshold(model, options, _threshVAL, Dataset.MSISBI2015)
+        evaluate_with_threshold(model, options, _threshVAL, Dataset.BRAINWEB)
+        # evaluate_with_threshold(model, options, _threshVAL, Dataset.MSLUB)
+        # evaluate_with_threshold(model, options, _threshVAL, Dataset.MSISBI2015)
 
 
 def evaluate_with_threshold(model, options, threshold, dataset):
@@ -128,8 +128,8 @@ if __name__ == '__main__':
     args.add_argument('-g', '--outputHeight', default=128, type=int, help='Output height')
     args.add_argument('-o', '--optimizer', default='ADAM', type=str, help='Can be either ADAM, SGD or RMSProp')
     args.add_argument('-i', '--intermediateResolutions', default=(8, 8), type=Tuple[int], help='Spatial Bottleneck resolution')
-    args.add_argument('-s', '--slices_start', default=20, type=int, help='slices start')
-    args.add_argument('-e', '--slices_end', default=130, type=int, help='slices end')
+    args.add_argument('-s', '--slices_start', default=80, type=int, help='slices start')
+    args.add_argument('-e', '--slices_end', default=200, type=int, help='slices end')
     args.add_argument('-t', '--trainer', default='AE', type=str, help='Can be every class from trainers directory')
     args.add_argument('-m', '--model', default='autoencoder', type=str, help='Can be every class from models directory')
     args.add_argument('-O', '--threshold', default=None, type=float, help='Use predefined ThreshOld')
