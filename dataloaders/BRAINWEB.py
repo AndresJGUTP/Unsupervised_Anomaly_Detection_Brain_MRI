@@ -60,6 +60,8 @@ class BRAINWEB(object):
     def __init__(self, options=Options()):
         self.options = options
 
+        print('### Type: ', options.filterType)
+
         if options.cache and os.path.isfile(self.pckl_name()):
             f = open(self.pckl_name(), 'rb')
             tmp = pickle.load(f)
@@ -103,6 +105,7 @@ class BRAINWEB(object):
 
                 self._convert_patient_split()  # NEW! We have a new format for storing hte patientsSplit which is OS agnostic.
             else:
+                # print('abre: ', self.split_name())
                 f = open(self.split_name(), 'rb')
                 self.patients_split = pickle.load(f)
                 f.close()
@@ -112,7 +115,9 @@ class BRAINWEB(object):
             _images = []
             _labels = []
             _sets = []
+            # print(self.patients_split)
             for p, patient in enumerate(self.patients):
+                # print(patient)
                 if patient["name"] in self.patients_split['TRAIN']:
                     _set_of_current_patient = BRAINWEB.SET_TYPES.index('TRAIN')
                 elif patient["name"] in self.patients_split['VAL']:
@@ -231,7 +236,13 @@ class BRAINWEB(object):
                 _regex = BRAINWEB.PROTOCOL_MAPPINGS[options.filterProtocol] + ".nii*"
             else:
                 _regex = "*.nii*"
-            _files = glob.glob(os.path.join(options.dir, minc_folder, _regex))
+
+            if options.filterType == 'NORMAL':
+              _files = glob.glob(os.path.join(options.dir, minc_folder, _regex))
+            else:
+              # _files = glob.glob(os.path.join(options.dir, minc_folder, _regex))
+              _files = glob.glob('/content/gdrive/MyDrive/MRI Datasets/BRATS2018/MICCAI_BraTS_2018_Data_Training/HGG/*/*t1.nii')
+
             for f, fname in enumerate(_files):
                 patient = {
                     'name': os.path.basename(fname),
@@ -247,7 +258,8 @@ class BRAINWEB(object):
                 elif patient['type'] == 'MODERATEMS':
                     patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, 'moderate_lesions.mnc.gz')
                 elif patient['type'] == 'ADNI':
-                    patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, patient['name'].replace('t1', 'seg'))
+                    patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, patient['fullpath'].replace('t1', 'seg'))
+                    # patient['groundtruth_filename'] = os.path.join('/content/gdrive/MyDrive/MRI Datasets/BRATS2018/MICCAI_BraTS_2018_Data_Training/HGG', patient['name'].replace('_t1', '') , patient['name'].replace('t1', 'seg'))
 
                 patients.append(patient)
 
