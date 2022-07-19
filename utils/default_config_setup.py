@@ -18,7 +18,7 @@ class Dataset(Enum):
     MSLUB = 'MSLUBDIR'
 
 
-def get_options(batchsize, learningrate, numEpochs, zDim, outputWidth, outputHeight, slices_start=20, slices_end=130, numMonteCarloSamples=0, config=None):
+def get_options(batchsize, learningrate, numEpochs, zDim, outputWidth, outputHeight, slices_start=20, slices_end=130, numMonteCarloSamples=0, config=None, folderSevereMS='', folderGTLesion=''):
     options = {}
     # Load config.json, which should hold DATADIR, CHECKPOINTDIR and SAMPLEDIR
     if config:
@@ -54,6 +54,8 @@ def get_options(batchsize, learningrate, numEpochs, zDim, outputWidth, outputHei
     options['applyHyperIntensityPrior'] = True
     options['medianFiltering'] = True
     options['erodeBrainmask'] = True
+    options['folderSevereMS'] = folderSevereMS
+    options['folderGTLesion'] = folderGTLesion
     return options
 
 
@@ -239,6 +241,8 @@ def get_Brainweb_dataset_options(options):
     dataset_options.sliceEnd = options['sliceEnd']
     dataset_options.backgroundRemoval = True
     dataset_options.registerTo = None
+    dataset_options.folderSevereMS = options['folderSevereMS']
+    dataset_options.folderGTLesion = options['folderGTLesion']
     return dataset_options
 
 

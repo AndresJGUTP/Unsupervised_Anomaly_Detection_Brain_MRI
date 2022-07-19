@@ -56,6 +56,7 @@ class BRAINWEB(object):
             self.normalizationMethod = 'standardization'
             self.skullRemoval = False
             self.backgroundRemoval = False
+            self.folderGTLesion = ''
 
     def __init__(self, options=Options()):
         self.options = options
@@ -240,8 +241,7 @@ class BRAINWEB(object):
             if options.filterType == 'NORMAL':
               _files = glob.glob(os.path.join(options.dir, minc_folder, _regex))
             else:
-              # _files = glob.glob(os.path.join(options.dir, minc_folder, _regex))
-              _files = glob.glob('/content/gdrive/MyDrive/MRI Datasets/BRATS2018/MICCAI_BraTS_2018_Data_Training/HGG/*/*t1.nii')
+              _files = glob.glob(options.folderSevereMS)
 
             for f, fname in enumerate(_files):
                 patient = {
@@ -258,8 +258,7 @@ class BRAINWEB(object):
                 elif patient['type'] == 'MODERATEMS':
                     patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, 'moderate_lesions.mnc.gz')
                 elif patient['type'] == 'ADNI':
-                    patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, patient['fullpath'].replace('t1', 'seg'))
-                    # patient['groundtruth_filename'] = os.path.join('/content/gdrive/MyDrive/MRI Datasets/BRATS2018/MICCAI_BraTS_2018_Data_Training/HGG', patient['name'].replace('_t1', '') , patient['name'].replace('t1', 'seg'))
+                    patient['groundtruth_filename'] = os.path.join(options.folderGTLesion, patient['name'].replace('t1', 'seg'))
 
                 patients.append(patient)
 

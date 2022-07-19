@@ -29,7 +29,7 @@ def main(args):
     dataset = Dataset.BRAINWEB
     options = get_options(batchsize=args.batchsize, learningrate=args.lr, numEpochs=args.numEpochs, zDim=args.zDim, outputWidth=args.outputWidth,
                           outputHeight=args.outputHeight, slices_start=args.slices_start, slices_end=args.slices_end,
-                          numMonteCarloSamples=args.numMonteCarloSamples, config=json_config)
+                          numMonteCarloSamples=args.numMonteCarloSamples, config=json_config, folderSevereMS = 'datasets/ADNI/MRI/*t1.nii', folderGTLesion = 'datasets/ADNI/GROUND_TRUTH/')
     options['data']['dir'] = options["globals"][dataset.value]
     dataset_hc, dataset_pc = get_datasets(options, dataset=dataset)
     config = get_config(
