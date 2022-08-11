@@ -100,7 +100,7 @@ class BRAINWEB(object):
 
                     if num_patients_for_current_split > (_num_patients - _already_taken):
                         num_patients_for_current_split = _num_patients - _already_taken
-
+                    
                     self.patients_split[split] = _ridx[_already_taken:_already_taken + num_patients_for_current_split]
                     _already_taken += num_patients_for_current_split
 
@@ -258,8 +258,8 @@ class BRAINWEB(object):
                 elif patient['type'] == 'MODERATEMS':
                     patient['groundtruth_filename'] = os.path.join(options.dir, options.folderGT, 'moderate_lesions.mnc.gz')
                 elif patient['type'] == 'ADNI':
-                    patient['groundtruth_filename'] = os.path.join(options.folderGTLesion, patient['name'].replace('t1', 'seg'))
-
+                    patient['groundtruth_filename'] = patient['fullpath'].replace('t1', 'seg')
+                
                 patients.append(patient)
 
         return patients
