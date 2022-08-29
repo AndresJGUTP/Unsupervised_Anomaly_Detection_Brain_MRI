@@ -240,8 +240,14 @@ class BRAINWEB(object):
 
             if options.filterType == 'NORMAL':
               _files = glob.glob(os.path.join(options.dir, minc_folder, _regex))
+              files_faken = int(len(_files) * options.percent_partition_healthy)
+              _files = _files[:files_faken]
             else:
               _files = glob.glob(options.folderSevereMS)
+              files_faken = int(len(_files) * options.percent_partition_lesion)
+              _files = _files[:files_faken]
+            
+            print(f'{len(_files)} files taken')
 
             for f, fname in enumerate(_files):
                 patient = {

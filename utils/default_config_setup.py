@@ -18,7 +18,7 @@ class Dataset(Enum):
     MSLUB = 'MSLUBDIR'
 
 
-def get_options(batchsize, learningrate, numEpochs, zDim, outputWidth, outputHeight, slices_start=20, slices_end=130, numMonteCarloSamples=0, config=None, folderSevereMS='', folderGTLesion=''):
+def get_options(batchsize, learningrate, numEpochs, zDim, outputWidth, outputHeight, slices_start=20, slices_end=130, numMonteCarloSamples=0, config=None, folderSevereMS='', folderGTLesion='', percent_partition_healthy=1, percent_partition_lesion=1):
     options = {}
     # Load config.json, which should hold DATADIR, CHECKPOINTDIR and SAMPLEDIR
     if config:
@@ -30,6 +30,8 @@ def get_options(batchsize, learningrate, numEpochs, zDim, outputWidth, outputHei
     # Options
     options['debug'] = False
     options['data'] = {}
+    options['data']['percent_partition_healthy'] = percent_partition_healthy
+    options['data']['percent_partition_lesion'] = percent_partition_lesion
     options['train'] = {}
     options['train']['checkpointDir'] = options["globals"]["CHECKPOINTDIR"]
     options['train']['samplesDir'] = options["globals"]["SAMPLEDIR"]
@@ -221,6 +223,8 @@ def get_Brainweb_dataset_options(options):
     dataset_options.description = ""
     dataset_options.debug = options['debug']
     dataset_options.dir = options['data']['dir']
+    dataset_options.percent_partition_healthy = options['data']['percent_partition_healthy']
+    dataset_options.percent_partition_lesion = options['data']['percent_partition_lesion']
     dataset_options.useCrops = False
     dataset_options.cropType = 'center'  # Not used when useCrops is False
     dataset_options.cropWidth = options['train']['outputWidth']
